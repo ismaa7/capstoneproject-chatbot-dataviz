@@ -1,0 +1,9 @@
+openai
+pymupdf
+chromadb
+tiktoken
+pandas
+streamlit
+python-dotenv
+tqdm
+plotly

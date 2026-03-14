@@ -1,0 +1,7 @@
+.env
+vectorstore/
+query_logs/
+__pycache__/
+*.pyc
+.DS_Store
+*.pkl
