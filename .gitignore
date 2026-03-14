@@ -1,5 +1,5 @@
 .env
-vectorstore/
+# vectorstore/
 query_logs/
 __pycache__/
 *.pyc
