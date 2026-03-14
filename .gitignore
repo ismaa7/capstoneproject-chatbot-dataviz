@@ -1,6 +1,6 @@
 .env
 # vectorstore/
-query_logs/
+# query_logs/
 __pycache__/
 *.pyc
 .DS_Store
