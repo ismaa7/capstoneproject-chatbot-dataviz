@@ -3,6 +3,7 @@ pymupdf
 chromadb
 tiktoken
 pandas
+numpy
 streamlit
 python-dotenv
 tqdm
