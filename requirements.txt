@@ -4,7 +4,7 @@ chromadb
 tiktoken
 pandas
 numpy
-streamlit
+streamlit>=1.35.0
 python-dotenv
 tqdm
 plotly
