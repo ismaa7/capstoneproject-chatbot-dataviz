@@ -8,10 +8,26 @@ from src.config import OPENAI_API_KEY, EMBEDDING_MODEL, CHAT_MODEL, COLLECTION_N
 from src.intent import extract_intent
 
 os.makedirs(LOGS_DIR, exist_ok=True)
-client = OpenAI()
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(api_key=OPENAI_API_KEY, model_name=EMBEDDING_MODEL)
-chroma_client = chromadb.PersistentClient(path=VECTORSTORE_DIR)
-collection = chroma_client.get_collection(name=COLLECTION_NAME, embedding_function=openai_ef)
+
+_client = None
+_collection = None
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI()
+    return _client
+
+def _get_collection():
+    global _collection
+    if _collection is None:
+        openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+            api_key=os.environ.get("OPENAI_API_KEY", OPENAI_API_KEY),
+            model_name=EMBEDDING_MODEL
+        )
+        chroma_client = chromadb.PersistentClient(path=VECTORSTORE_DIR)
+        _collection = chroma_client.get_collection(name=COLLECTION_NAME, embedding_function=openai_ef)
+    return _collection
 
 SYSTEM_PROMPT = """You are Sofia, a friendly Toyota sales assistant at Toyota Canarias, serving the Canary Islands.
 PERSONALITY: Warm, professional, enthusiastic about Toyota. You understand island life: short urban trips, warm climate, mountain roads, tourism and family lifestyle. Conversational, never robotic. Ask smart follow-up questions. Never pressure the customer.
@@ -20,6 +36,7 @@ On price: invite them to visit the showroom or book a test drive.
 IMPORTANT: Only recommend vehicles you have retrieved context for. End every conversation by inviting them to Toyota Canarias."""
 
 def retrieve_context(query: str, intent: dict, n: int = 4) -> str:
+    collection = _get_collection()
     search_q = ' '.join(filter(None, [query, intent.get('fuel_preference',''), intent.get('body_type_preference',''), intent.get('use_case','')]))
     try:
         where = None
@@ -58,7 +75,7 @@ def get_reply(user_message: str, history: list, session_id: str) -> str:
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     messages.extend(history[-6:])
     messages.append({"role": "user", "content": f"RETRIEVED VEHICLE INFO:\n{context}\n\n---\n\nCustomer says: {user_message}"})
-    r = client.chat.completions.create(model=CHAT_MODEL, messages=messages, temperature=0.7, max_tokens=600)
+    r = _get_client().chat.completions.create(model=CHAT_MODEL, messages=messages, temperature=0.7, max_tokens=600)
     reply = r.choices[0].message.content
     log_query(session_id, user_message, reply, intent)
     return reply

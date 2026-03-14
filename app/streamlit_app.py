@@ -4,17 +4,18 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import streamlit as st
 import uuid
 
-# Inject Streamlit secrets into environment before importing modules that use them
-if "OPENAI_API_KEY" in st.secrets:
-    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-
-from src.chatbot import get_reply
-
 st.set_page_config(
     page_title="Toyota Canarias — Sofia",
     page_icon="🚗",
     layout="wide",
 )
+
+# Inject Streamlit secrets into environment so OpenAI client can find the key
+for key in ["OPENAI_API_KEY"]:
+    if key in st.secrets:
+        os.environ[key] = st.secrets[key]
+
+from src.chatbot import get_reply
 
 # ── shared CSS ────────────────────────────────────────────────────────────────
 st.markdown("""

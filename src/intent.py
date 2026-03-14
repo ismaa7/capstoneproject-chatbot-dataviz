@@ -2,7 +2,13 @@ import re, json
 from openai import OpenAI
 from src.config import CHAT_MODEL
 
-client = OpenAI()
+_client = None
+
+def _get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI()
+    return _client
 
 def extract_intent(user_message: str) -> dict:
     prompt = (
@@ -16,7 +22,7 @@ def extract_intent(user_message: str) -> dict:
         'model_mentioned (null or string), sentiment (positive/neutral/negative).'
     )
     try:
-        r = client.chat.completions.create(
+        r = _get_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
